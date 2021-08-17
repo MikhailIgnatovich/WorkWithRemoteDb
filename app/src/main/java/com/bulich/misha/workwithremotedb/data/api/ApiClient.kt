@@ -3,7 +3,7 @@ package com.bulich.misha.workwithremotedb.data.api
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class ApiClient private constructor(){
+class ApiClient private constructor() {
 
     val api: ApiInterface
         get() = retrofit!!.create(
@@ -11,7 +11,7 @@ class ApiClient private constructor(){
         )
 
     init {
-         retrofit = Retrofit.Builder()
+        retrofit = Retrofit.Builder()
             .baseUrl("")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
