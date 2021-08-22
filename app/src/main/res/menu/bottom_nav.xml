@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item android:id="@+id/homeItemBottomNav"
+        android:icon="@drawable/home"
+        android:title="HOME"
+        app:showAsAction="ifRoom"/>
+
+    <item android:id="@+id/filmsItemBottomNav"
+        android:icon="@drawable/catalog_films"
+        android:title="CATALOG FILMS"
+        app:showAsAction="ifRoom"/>
+
+</menu>

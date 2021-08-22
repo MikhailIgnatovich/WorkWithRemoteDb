@@ -12,7 +12,7 @@ class ApiClient private constructor() {
 
     init {
         retrofit = Retrofit.Builder()
-            .baseUrl("")
+            .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
 
