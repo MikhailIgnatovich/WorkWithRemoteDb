@@ -1,0 +1,630 @@
+Index: app/build.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/build.gradle	(revision 3324635c4b7bed0c37c7a8968d0f601ae7fadcb0)
++++ app/build.gradle	(revision f0a3505d4b8f4dd4f8e47635dc7d44191b0cc679)
+@@ -31,10 +31,17 @@
+     kotlinOptions {
+         jvmTarget = '1.8'
+     }
++
++    buildFeatures {
++        dataBinding = true
++    }
++
++
+ }
+ 
+ dependencies {
+ 
++    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+     def lifecycle_version = "2.3.1"
+     def arch_version = "2.1.0"
+     def coroutines_version = "1.5.0"
+Index: app/src/main/AndroidManifest.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/AndroidManifest.xml	(revision 3324635c4b7bed0c37c7a8968d0f601ae7fadcb0)
++++ app/src/main/AndroidManifest.xml	(revision f0a3505d4b8f4dd4f8e47635dc7d44191b0cc679)
+@@ -2,14 +2,18 @@
+ <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+     package="com.bulich.misha.workwithremotedb">
+ 
++    <uses-permission android:name="android.permission.INTERNET"/>
++
+     <application
++        android:name=".presentation.App"
+         android:allowBackup="true"
+         android:icon="@mipmap/ic_launcher"
+         android:label="@string/app_name"
+         android:roundIcon="@mipmap/ic_launcher_round"
+         android:supportsRtl="true"
+-        android:theme="@style/Theme.WorkWithRemoteDb">
+-        <activity android:name=".MainActivity">
++        android:theme="@style/Theme.WorkWithRemoteDb"
++        android:usesCleartextTraffic="true">
++        <activity android:name=".presentation.MainActivity">
+             <intent-filter>
+                 <action android:name="android.intent.action.MAIN" />
+ 
+Index: app/src/main/java/com/bulich/misha/workwithremotedb/MainActivity.kt
+===================================================================
+--- app/src/main/java/com/bulich/misha/workwithremotedb/MainActivity.kt	(revision 3324635c4b7bed0c37c7a8968d0f601ae7fadcb0)
++++ app/src/main/java/com/bulich/misha/workwithremotedb/MainActivity.kt	(revision 3324635c4b7bed0c37c7a8968d0f601ae7fadcb0)
+@@ -1,11 +0,0 @@
+-package com.bulich.misha.workwithremotedb
+-
+-import androidx.appcompat.app.AppCompatActivity
+-import android.os.Bundle
+-
+-class MainActivity : AppCompatActivity() {
+-    override fun onCreate(savedInstanceState: Bundle?) {
+-        super.onCreate(savedInstanceState)
+-        setContentView(R.layout.activity_main)
+-    }
+-}
+\ No newline at end of file
+Index: app/src/main/java/com/bulich/misha/workwithremotedb/data/api/ApiClient.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/bulich/misha/workwithremotedb/data/api/ApiClient.kt	(revision 3324635c4b7bed0c37c7a8968d0f601ae7fadcb0)
++++ app/src/main/java/com/bulich/misha/workwithremotedb/data/api/ApiClient.kt	(revision f0a3505d4b8f4dd4f8e47635dc7d44191b0cc679)
+@@ -12,7 +12,7 @@
+ 
+     init {
+         retrofit = Retrofit.Builder()
+-            .baseUrl("")
++            .baseUrl(BASE_URL)
+             .addConverterFactory(GsonConverterFactory.create())
+             .build()
+ 
+Index: app/src/main/java/com/bulich/misha/workwithremotedb/presentation/App.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/bulich/misha/workwithremotedb/presentation/App.kt	(revision f0a3505d4b8f4dd4f8e47635dc7d44191b0cc679)
++++ app/src/main/java/com/bulich/misha/workwithremotedb/presentation/App.kt	(revision f0a3505d4b8f4dd4f8e47635dc7d44191b0cc679)
+@@ -0,0 +1,20 @@
++package com.bulich.misha.workwithremotedb.presentation
++
++import android.app.Application
++import com.bulich.misha.workwithremotedb.presentation.di.moduleFilms
++import org.koin.android.ext.koin.androidContext
++import org.koin.android.ext.koin.androidLogger
++import org.koin.core.context.startKoin
++
++class App : Application() {
++
++    override fun onCreate() {
++        super.onCreate()
++
++        startKoin {
++            androidLogger()
++            androidContext(this@App)
++            modules(moduleFilms)
++        }
++    }
++}
+\ No newline at end of file
+Index: app/src/main/java/com/bulich/misha/workwithremotedb/presentation/FilmAdapter.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/bulich/misha/workwithremotedb/presentation/FilmAdapter.kt	(revision f0a3505d4b8f4dd4f8e47635dc7d44191b0cc679)
++++ app/src/main/java/com/bulich/misha/workwithremotedb/presentation/FilmAdapter.kt	(revision f0a3505d4b8f4dd4f8e47635dc7d44191b0cc679)
+@@ -0,0 +1,45 @@
++package com.bulich.misha.workwithremotedb.presentation
++
++import android.view.LayoutInflater
++import android.view.ViewGroup
++import androidx.databinding.DataBindingUtil
++import androidx.recyclerview.widget.RecyclerView
++import com.bulich.misha.workwithremotedb.R
++import com.bulich.misha.workwithremotedb.data.models.FilmsModel
++import com.bulich.misha.workwithremotedb.databinding.FilmItemBinding
++import com.squareup.picasso.Picasso
++
++class FilmAdapter : RecyclerView.Adapter<FilmAdapter.FilmHolder>() {
++
++    private val filmsList = ArrayList<FilmsModel>()
++
++    class FilmHolder(val binding: FilmItemBinding): RecyclerView.ViewHolder(binding.root) {
++
++        fun bind (filmsModel: FilmsModel) {
++            val getImage = filmsModel.image
++            Picasso.get().load(getImage).into(binding.imageCardFilm)
++            binding.idCardFilms.text = filmsModel.id.toString()
++            binding.nameCardFilms.text = filmsModel.name
++        }
++
++    }
++
++    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FilmHolder {
++        val layoutInflater = LayoutInflater.from(parent.context)
++        val binding: FilmItemBinding = DataBindingUtil.inflate(layoutInflater, R.layout.film_item, parent, false)
++        return FilmHolder(binding)
++    }
++
++    override fun onBindViewHolder(holder: FilmHolder, position: Int) {
++        holder.bind(filmsList[position])
++    }
++
++    override fun getItemCount(): Int {
++        return filmsList.size
++    }
++
++    fun setList(films: List<FilmsModel>) {
++        filmsList.clear()
++        filmsList.addAll(films)
++    }
++}
+\ No newline at end of file
+Index: app/src/main/java/com/bulich/misha/workwithremotedb/presentation/Films.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/bulich/misha/workwithremotedb/presentation/Films.kt	(revision f0a3505d4b8f4dd4f8e47635dc7d44191b0cc679)
++++ app/src/main/java/com/bulich/misha/workwithremotedb/presentation/Films.kt	(revision f0a3505d4b8f4dd4f8e47635dc7d44191b0cc679)
+@@ -0,0 +1,50 @@
++package com.bulich.misha.workwithremotedb.presentation
++
++import android.os.Bundle
++import androidx.fragment.app.Fragment
++import android.view.LayoutInflater
++import android.view.View
++import android.view.ViewGroup
++import androidx.databinding.DataBindingUtil
++import androidx.lifecycle.Observer
++import androidx.recyclerview.widget.LinearLayoutManager
++import com.bulich.misha.workwithremotedb.R
++import com.bulich.misha.workwithremotedb.databinding.FilmsBinding
++import org.koin.androidx.viewmodel.ext.android.viewModel
++
++
++class Films : Fragment() {
++
++    private var binding: FilmsBinding? = null
++    private var filmAdapter: FilmAdapter? = null
++    private val filmsViewModel: FilmsViewModel by viewModel()
++
++
++    override fun onCreateView(
++        inflater: LayoutInflater, container: ViewGroup?,
++        savedInstanceState: Bundle?
++    ): View? {
++        // Inflate the layout for this fragment
++        binding = DataBindingUtil.inflate(inflater, R.layout.films, container, false)
++
++        initRecyclerFilms()
++
++        loadFilms()
++
++        return binding?.root
++    }
++
++    private fun loadFilms() {
++        filmsViewModel.loadFilms.observe(viewLifecycleOwner, Observer {
++            filmAdapter?.setList(it)
++            filmAdapter?.notifyDataSetChanged()
++        })
++    }
++
++
++    private fun initRecyclerFilms() {
++        binding?.recyclerFilms?.layoutManager = LinearLayoutManager(context)
++        filmAdapter = FilmAdapter()
++        binding?.recyclerFilms?.adapter = filmAdapter
++    }
++}
+\ No newline at end of file
+Index: app/src/main/java/com/bulich/misha/workwithremotedb/presentation/FilmsViewModel.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/bulich/misha/workwithremotedb/presentation/FilmsViewModel.kt	(revision f0a3505d4b8f4dd4f8e47635dc7d44191b0cc679)
++++ app/src/main/java/com/bulich/misha/workwithremotedb/presentation/FilmsViewModel.kt	(revision f0a3505d4b8f4dd4f8e47635dc7d44191b0cc679)
+@@ -0,0 +1,16 @@
++package com.bulich.misha.workwithremotedb.presentation
++
++import android.content.Context
++import androidx.lifecycle.ViewModel
++import androidx.lifecycle.viewModelScope
++import com.bulich.misha.workwithremotedb.domain.useCase.FilmsUseCase
++import kotlinx.coroutines.launch
++
++class FilmsViewModel(private val filmsUseCase: FilmsUseCase) : ViewModel() {
++
++    val loadFilms = filmsUseCase.loadFilms()
++
++    fun migration(context: Context) = viewModelScope.launch {
++        filmsUseCase.startMigration(context)
++    }
++}
+\ No newline at end of file
+Index: app/src/main/java/com/bulich/misha/workwithremotedb/presentation/Home.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/bulich/misha/workwithremotedb/presentation/Home.kt	(revision f0a3505d4b8f4dd4f8e47635dc7d44191b0cc679)
++++ app/src/main/java/com/bulich/misha/workwithremotedb/presentation/Home.kt	(revision f0a3505d4b8f4dd4f8e47635dc7d44191b0cc679)
+@@ -0,0 +1,21 @@
++package com.bulich.misha.workwithremotedb.presentation
++
++import android.os.Bundle
++import androidx.fragment.app.Fragment
++import android.view.LayoutInflater
++import android.view.View
++import android.view.ViewGroup
++import com.bulich.misha.workwithremotedb.R
++
++
++class Home : Fragment() {
++
++
++    override fun onCreateView(
++        inflater: LayoutInflater, container: ViewGroup?,
++        savedInstanceState: Bundle?
++    ): View? {
++        // Inflate the layout for this fragment
++        return inflater.inflate(R.layout.home, container, false)
++    }
++}
+\ No newline at end of file
+Index: app/src/main/java/com/bulich/misha/workwithremotedb/presentation/MainActivity.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/bulich/misha/workwithremotedb/presentation/MainActivity.kt	(revision f0a3505d4b8f4dd4f8e47635dc7d44191b0cc679)
++++ app/src/main/java/com/bulich/misha/workwithremotedb/presentation/MainActivity.kt	(revision f0a3505d4b8f4dd4f8e47635dc7d44191b0cc679)
+@@ -0,0 +1,35 @@
++package com.bulich.misha.workwithremotedb.presentation
++
++import androidx.appcompat.app.AppCompatActivity
++import android.os.Bundle
++import androidx.databinding.DataBindingUtil
++import com.bulich.misha.workwithremotedb.R
++import com.bulich.misha.workwithremotedb.databinding.ActivityMainBinding
++import org.koin.androidx.viewmodel.ext.android.viewModel
++
++class MainActivity : AppCompatActivity() {
++
++    private var binding: ActivityMainBinding? = null
++    val filmsViewModel: FilmsViewModel by viewModel()
++
++    override fun onCreate(savedInstanceState: Bundle?) {
++        super.onCreate(savedInstanceState)
++        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
++
++        supportFragmentManager.beginTransaction().replace(R.id.content, Home()).commit()
++
++        binding?.bottomNav?.selectedItemId = R.id.homeItemBottomNav
++
++        binding?.bottomNav?.setOnItemSelectedListener { item ->
++
++            when(item.itemId) {
++                R.id.homeItemBottomNav -> supportFragmentManager.beginTransaction().replace(R.id.content, Home()).commit()
++                R.id.filmsItemBottomNav -> supportFragmentManager.beginTransaction().replace(R.id.content, Films()).commit()
++            }
++
++            return@setOnItemSelectedListener true
++        }
++
++        filmsViewModel.migration(this)
++    }
++}
+\ No newline at end of file
+Index: app/src/main/java/com/bulich/misha/workwithremotedb/presentation/di/AppModules.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/bulich/misha/workwithremotedb/presentation/di/AppModules.kt	(revision f0a3505d4b8f4dd4f8e47635dc7d44191b0cc679)
++++ app/src/main/java/com/bulich/misha/workwithremotedb/presentation/di/AppModules.kt	(revision f0a3505d4b8f4dd4f8e47635dc7d44191b0cc679)
+@@ -0,0 +1,55 @@
++package com.bulich.misha.workwithremotedb.presentation.di
++
++import androidx.room.Room
++import com.bulich.misha.workwithremotedb.data.localDB.LocalDB
++import com.bulich.misha.workwithremotedb.data.repository.dataSource.FilmsApiDataSource
++import com.bulich.misha.workwithremotedb.data.repository.dataSource.FilmsDataSource
++import com.bulich.misha.workwithremotedb.data.repository.dataSourceIMPL.FilmsApiDataSourceIMPL
++import com.bulich.misha.workwithremotedb.data.repository.dataSourceIMPL.FilmsDataSourceIMPL
++import com.bulich.misha.workwithremotedb.data.repository.repository.FilmsRepository
++import com.bulich.misha.workwithremotedb.domain.repository.FilmsCall
++import com.bulich.misha.workwithremotedb.domain.useCase.FilmsUseCase
++import com.bulich.misha.workwithremotedb.presentation.FilmsViewModel
++import org.koin.android.ext.koin.androidContext
++import org.koin.androidx.viewmodel.dsl.viewModel
++import org.koin.core.scope.get
++import org.koin.dsl.module
++import org.koin.dsl.single
++
++val moduleFilms = module {
++
++    single {
++        Room.databaseBuilder(
++            androidContext(), LocalDB::class.java,
++            "LocalDB"
++        ).build()
++    }
++
++    single { get<LocalDB>().filmsDao }
++
++    single<FilmsDataSource> {
++        FilmsDataSourceIMPL(
++            get()
++        )
++    }
++
++    single<FilmsApiDataSource> {
++        FilmsApiDataSourceIMPL(
++            get()
++        )
++    }
++
++    single<FilmsCall> {
++        FilmsRepository(
++            get(), get()
++        )
++    }
++
++    single {
++        FilmsUseCase(
++            get()
++        )
++    }
++
++    viewModel { FilmsViewModel(get()) }
++}
+\ No newline at end of file
+Index: app/src/main/res/color/color_tab.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/color/color_tab.xml	(revision f0a3505d4b8f4dd4f8e47635dc7d44191b0cc679)
++++ app/src/main/res/color/color_tab.xml	(revision f0a3505d4b8f4dd4f8e47635dc7d44191b0cc679)
+@@ -0,0 +1,7 @@
++<?xml version="1.0" encoding="utf-8"?>
++<selector xmlns:android="http://schemas.android.com/apk/res/android">
++    
++    <item android:color="@android:color/holo_red_light" android:state_selected="true"/>
++    <item android:color="@color/white" android:state_selected="false"/>
++
++</selector>
+\ No newline at end of file
+Index: app/src/main/res/drawable/catalog_films.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/drawable/catalog_films.xml	(revision f0a3505d4b8f4dd4f8e47635dc7d44191b0cc679)
++++ app/src/main/res/drawable/catalog_films.xml	(revision f0a3505d4b8f4dd4f8e47635dc7d44191b0cc679)
+@@ -0,0 +1,5 @@
++<vector android:height="24dp" android:tint="#FBF6F6"
++    android:viewportHeight="24" android:viewportWidth="24"
++    android:width="24dp" xmlns:android="http://schemas.android.com/apk/res/android">
++    <path android:fillColor="@android:color/white" android:pathData="M10,16.5l6,-4.5 -6,-4.5v9zM12,2C6.48,2 2,6.48 2,12s4.48,10 10,10 10,-4.48 10,-10S17.52,2 12,2zM12,20c-4.41,0 -8,-3.59 -8,-8s3.59,-8 8,-8 8,3.59 8,8 -3.59,8 -8,8z"/>
++</vector>
+Index: app/src/main/res/drawable/home.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/drawable/home.xml	(revision f0a3505d4b8f4dd4f8e47635dc7d44191b0cc679)
++++ app/src/main/res/drawable/home.xml	(revision f0a3505d4b8f4dd4f8e47635dc7d44191b0cc679)
+@@ -0,0 +1,5 @@
++<vector android:height="24dp" android:tint="#FBF6F6"
++    android:viewportHeight="24" android:viewportWidth="24"
++    android:width="24dp" xmlns:android="http://schemas.android.com/apk/res/android">
++    <path android:fillColor="@android:color/white" android:pathData="M10,20v-6h4v6h5v-8h3L12,3 2,12h3v8z"/>
++</vector>
+Index: app/src/main/res/layout/activity_main.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/activity_main.xml	(revision 3324635c4b7bed0c37c7a8968d0f601ae7fadcb0)
++++ app/src/main/res/layout/activity_main.xml	(revision f0a3505d4b8f4dd4f8e47635dc7d44191b0cc679)
+@@ -1,18 +1,37 @@
+ <?xml version="1.0" encoding="utf-8"?>
+-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
++<layout xmlns:android="http://schemas.android.com/apk/res/android"
+     xmlns:app="http://schemas.android.com/apk/res-auto"
+-    xmlns:tools="http://schemas.android.com/tools"
++    xmlns:tools="http://schemas.android.com/tools">
++<androidx.constraintlayout.widget.ConstraintLayout
+     android:layout_width="match_parent"
+     android:layout_height="match_parent"
+-    tools:context=".MainActivity">
++    tools:context=".presentation.MainActivity">
++
++    <FrameLayout
++        android:id="@+id/content"
++        android:layout_width="match_parent"
++        android:layout_height="match_parent"
++        app:layout_constraintTop_toTopOf="parent"
++        app:layout_constraintBottom_toBottomOf="parent"/>
+ 
+-    <TextView
+-        android:layout_width="wrap_content"
+-        android:layout_height="wrap_content"
+-        android:text="Hello World!"
+-        app:layout_constraintBottom_toBottomOf="parent"
+-        app:layout_constraintLeft_toLeftOf="parent"
+-        app:layout_constraintRight_toRightOf="parent"
+-        app:layout_constraintTop_toTopOf="parent" />
++        <androidx.coordinatorlayout.widget.CoordinatorLayout
++            android:layout_width="match_parent"
++            android:layout_height="wrap_content"
++            app:layout_constraintBottom_toBottomOf="parent"
++            app:layout_constraintStart_toStartOf="parent"
++            app:layout_constraintEnd_toEndOf="parent">
++
++            <com.google.android.material.bottomnavigation.BottomNavigationView
++                android:id="@+id/bottomNav"
++                android:layout_width="match_parent"
++                android:layout_height="?attr/actionBarSize"
++                android:background="@color/black"
++                android:elevation="16dp"
++                app:itemIconTint="@color/color_tab"
++                app:itemTextColor="@color/color_tab"
++                app:menu="@menu/bottom_nav"/>
+ 
+-</androidx.constraintlayout.widget.ConstraintLayout>
+\ No newline at end of file
++        </androidx.coordinatorlayout.widget.CoordinatorLayout>
++
++</androidx.constraintlayout.widget.ConstraintLayout>
++</layout>
+\ No newline at end of file
+Index: app/src/main/res/layout/film_item.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/film_item.xml	(revision f0a3505d4b8f4dd4f8e47635dc7d44191b0cc679)
++++ app/src/main/res/layout/film_item.xml	(revision f0a3505d4b8f4dd4f8e47635dc7d44191b0cc679)
+@@ -0,0 +1,48 @@
++<?xml version="1.0" encoding="utf-8"?>
++<layout xmlns:android="http://schemas.android.com/apk/res/android"
++    xmlns:app="http://schemas.android.com/apk/res-auto">
++
++    <com.google.android.material.card.MaterialCardView
++        android:id="@+id/cardFilm"
++        android:layout_width="match_parent"
++        android:layout_height="180dp"
++        android:layout_margin="18dp">
++
++        <androidx.constraintlayout.widget.ConstraintLayout
++            android:id="@+id/contentCardFilm"
++            android:layout_width="match_parent"
++            android:layout_height="match_parent"
++            android:background="@android:color/holo_orange_dark">
++
++            <androidx.appcompat.widget.AppCompatImageView
++                android:id="@+id/imageCardFilm"
++                android:layout_width="180dp"
++                android:layout_height="wrap_content"
++                app:layout_constraintStart_toStartOf="parent"
++                app:layout_constraintTop_toTopOf="parent" />
++
++            <androidx.appcompat.widget.AppCompatTextView
++                android:id="@+id/idCardFilms"
++                android:layout_width="wrap_content"
++                android:layout_height="wrap_content"
++                android:layout_margin="18dp"
++                android:textColor="@color/black"
++                app:layout_constraintBottom_toBottomOf="parent"
++                app:layout_constraintStart_toEndOf="@id/imageCardFilm"
++                app:layout_constraintTop_toTopOf="parent" />
++
++            <androidx.appcompat.widget.AppCompatTextView
++                android:id="@+id/nameCardFilms"
++                android:layout_width="wrap_content"
++                android:layout_height="wrap_content"
++                android:layout_margin="18dp"
++                android:textColor="@color/black"
++                app:layout_constraintBottom_toBottomOf="parent"
++                app:layout_constraintStart_toEndOf="@id/idCardFilms"
++                app:layout_constraintTop_toTopOf="parent" />
++
++        </androidx.constraintlayout.widget.ConstraintLayout>
++
++    </com.google.android.material.card.MaterialCardView>
++
++</layout>
+\ No newline at end of file
+Index: app/src/main/res/layout/films.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/films.xml	(revision f0a3505d4b8f4dd4f8e47635dc7d44191b0cc679)
++++ app/src/main/res/layout/films.xml	(revision f0a3505d4b8f4dd4f8e47635dc7d44191b0cc679)
+@@ -0,0 +1,16 @@
++<?xml version="1.0" encoding="utf-8"?>
++<layout xmlns:android="http://schemas.android.com/apk/res/android"
++    xmlns:tools="http://schemas.android.com/tools">
++<FrameLayout
++    android:layout_width="match_parent"
++    android:layout_height="match_parent"
++    tools:context=".presentation.Films">
++
++   <androidx.recyclerview.widget.RecyclerView
++       android:id="@+id/recyclerFilms"
++       android:layout_width="match_parent"
++       android:layout_height="wrap_content"
++       android:layout_marginTop="20dp"/>
++
++</FrameLayout>
++</layout>
+\ No newline at end of file
+Index: app/src/main/res/layout/home.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/home.xml	(revision f0a3505d4b8f4dd4f8e47635dc7d44191b0cc679)
++++ app/src/main/res/layout/home.xml	(revision f0a3505d4b8f4dd4f8e47635dc7d44191b0cc679)
+@@ -0,0 +1,9 @@
++<?xml version="1.0" encoding="utf-8"?>
++<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
++    xmlns:tools="http://schemas.android.com/tools"
++    android:layout_width="match_parent"
++    android:layout_height="match_parent"
++    tools:context=".presentation.Home">
++
++
++</FrameLayout>
+\ No newline at end of file
+Index: app/src/main/res/menu/bottom_nav.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/menu/bottom_nav.xml	(revision f0a3505d4b8f4dd4f8e47635dc7d44191b0cc679)
++++ app/src/main/res/menu/bottom_nav.xml	(revision f0a3505d4b8f4dd4f8e47635dc7d44191b0cc679)
+@@ -0,0 +1,15 @@
++<?xml version="1.0" encoding="utf-8"?>
++<menu xmlns:android="http://schemas.android.com/apk/res/android"
++    xmlns:app="http://schemas.android.com/apk/res-auto">
++
++    <item android:id="@+id/homeItemBottomNav"
++        android:icon="@drawable/home"
++        android:title="HOME"
++        app:showAsAction="ifRoom"/>
++
++    <item android:id="@+id/filmsItemBottomNav"
++        android:icon="@drawable/catalog_films"
++        android:title="CATALOG FILMS"
++        app:showAsAction="ifRoom"/>
++
++</menu>
+\ No newline at end of file
+Index: app/src/main/res/values/strings.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/values/strings.xml	(revision 3324635c4b7bed0c37c7a8968d0f601ae7fadcb0)
++++ app/src/main/res/values/strings.xml	(revision f0a3505d4b8f4dd4f8e47635dc7d44191b0cc679)
+@@ -1,3 +1,5 @@
+ <resources>
+     <string name="app_name">WorkWithRemoteDb</string>
++    <!-- TODO: Remove or change this placeholder text -->
++    <string name="hello_blank_fragment">Hello blank fragment</string>
+ </resources>
+\ No newline at end of file
