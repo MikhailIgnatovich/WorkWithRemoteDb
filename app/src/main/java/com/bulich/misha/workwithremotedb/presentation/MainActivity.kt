@@ -30,6 +30,6 @@ class MainActivity : AppCompatActivity() {
             return@setOnItemSelectedListener true
         }
 
-        filmsViewModel.migration(this)
+        binding?.loader?.let { filmsViewModel.migration(this, it) }
     }
 }

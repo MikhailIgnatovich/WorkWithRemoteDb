@@ -2,6 +2,7 @@ package com.bulich.misha.workwithremotedb.data.repository.repository
 
 import android.content.Context
 import androidx.lifecycle.LiveData
+import com.agrawalsuneet.dotsloader.loaders.ZeeLoader
 import com.bulich.misha.workwithremotedb.data.models.FilmsModel
 import com.bulich.misha.workwithremotedb.data.repository.dataSource.FilmsApiDataSource
 import com.bulich.misha.workwithremotedb.data.repository.dataSource.FilmsDataSource
@@ -16,8 +17,8 @@ class FilmsRepository(
         return filmsDataSource.loadFilms()
     }
 
-    override suspend fun startMigration(context: Context) {
+    override suspend fun startMigration(context: Context, loader: ZeeLoader) {
         filmsDataSource.clear()
-        filmsApiDataSource.startMigration(context)
+        filmsApiDataSource.startMigration(context, loader)
     }
 }

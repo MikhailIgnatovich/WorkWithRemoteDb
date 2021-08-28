@@ -1,7 +1,9 @@
 package com.bulich.misha.workwithremotedb.data.repository.dataSourceIMPL
 
 import android.content.Context
+import android.view.View
 import android.widget.Toast
+import com.agrawalsuneet.dotsloader.loaders.ZeeLoader
 import com.bulich.misha.workwithremotedb.data.api.ApiClient
 import com.bulich.misha.workwithremotedb.data.models.FilmsApiModel
 import com.bulich.misha.workwithremotedb.data.models.FilmsModel
@@ -14,7 +16,7 @@ import retrofit2.Response
 class FilmsApiDataSourceIMPL(private val filmsDataSource: FilmsDataSource) :
     FilmsApiDataSource {
 
-    override fun startMigration(context: Context) {
+    override fun startMigration(context: Context, loader: ZeeLoader) {
         val call = ApiClient.instance?.api?.getFilms()
         call?.enqueue(object : Callback<ArrayList<FilmsApiModel>> {
             override fun onResponse(
@@ -39,6 +41,8 @@ class FilmsApiDataSourceIMPL(private val filmsDataSource: FilmsDataSource) :
                 }
 
                 Toast.makeText(context, "ЗАГРУЗКА", Toast.LENGTH_LONG).show()
+
+                loader.visibility = View.GONE
 
             }
 

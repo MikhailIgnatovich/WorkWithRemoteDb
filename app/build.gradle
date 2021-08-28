@@ -85,4 +85,6 @@ dependencies {
     implementation "io.insert-koin:koin-android-compat:$koin_version"
 
     implementation "com.squareup.picasso:picasso:$picasso"
+
+    implementation 'com.agrawalsuneet.androidlibs:dotsloader:1.4'
 }
